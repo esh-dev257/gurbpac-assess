@@ -36,27 +36,23 @@ export default function LoginPage() {
   const busy = loading || isSubmitting;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-slate-50 via-blue-50 to-indigo-100 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 shadow-lg mb-4">
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-600 mb-4">
             <Radio className="h-7 w-7 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            CBS Platform
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Content Broadcasting System
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">CBS Platform</h1>
+          <p className="text-sm text-gray-400 mt-1">Content Broadcasting System</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
           <div className="mb-6">
             <h2 className="text-xl font-bold text-gray-900">Sign in</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Enter your credentials to access the dashboard
+            <p className="text-sm text-gray-400 mt-1">
+              Enter your credentials to continue
             </p>
           </div>
 
@@ -74,15 +70,15 @@ export default function LoginPage() {
                   placeholder="you@school.com"
                   autoFocus
                   autoComplete="email"
-                  className={`w-full rounded-lg border pl-10 pr-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`w-full rounded-xl border pl-10 pr-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-violet-500 focus:border-violet-400 ${
                     errors.email
-                      ? "border-red-300 bg-red-50"
-                      : "border-gray-300 bg-white hover:border-gray-400"
+                      ? "border-rose-300 bg-rose-50"
+                      : "border-gray-200 bg-white hover:border-gray-300"
                   }`}
                 />
               </div>
               {errors.email && (
-                <p className="flex items-center gap-1 text-red-600 text-xs mt-1.5">
+                <p className="flex items-center gap-1 text-rose-600 text-xs mt-1.5">
                   <AlertCircle className="h-3 w-3" />
                   {errors.email.message}
                 </p>
@@ -101,15 +97,15 @@ export default function LoginPage() {
                   {...register("password")}
                   placeholder="••••••••"
                   autoComplete="current-password"
-                  className={`w-full rounded-lg border pl-10 pr-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`w-full rounded-xl border pl-10 pr-4 py-2.5 text-sm outline-none transition-all focus:ring-2 focus:ring-violet-500 focus:border-violet-400 ${
                     errors.password
-                      ? "border-red-300 bg-red-50"
-                      : "border-gray-300 bg-white hover:border-gray-400"
+                      ? "border-rose-300 bg-rose-50"
+                      : "border-gray-200 bg-white hover:border-gray-300"
                   }`}
                 />
               </div>
               {errors.password && (
-                <p className="flex items-center gap-1 text-red-600 text-xs mt-1.5">
+                <p className="flex items-center gap-1 text-rose-600 text-xs mt-1.5">
                   <AlertCircle className="h-3 w-3" />
                   {errors.password.message}
                 </p>
@@ -118,7 +114,7 @@ export default function LoginPage() {
 
             {/* API Error */}
             {error && (
-              <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+              <div className="flex items-center gap-2 rounded-xl bg-rose-50 border border-rose-100 px-4 py-3 text-sm text-rose-700">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 {error}
               </div>
@@ -127,7 +123,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={busy}
-              className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
+              className="w-full rounded-xl bg-violet-600 py-2.5 text-sm font-semibold text-white hover:bg-violet-700 focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
             >
               {busy ? (
                 <span className="flex items-center justify-center gap-2">
@@ -141,8 +137,8 @@ export default function LoginPage() {
           </form>
 
           {/* Demo credentials hint */}
-          <div className="mt-6 rounded-lg bg-gray-50 border border-gray-100 p-4 text-xs text-gray-500 space-y-1">
-            <p className="font-semibold text-gray-600">Demo credentials</p>
+          <div className="mt-6 rounded-xl bg-violet-50 border border-violet-100 p-4 text-xs text-violet-700 space-y-1">
+            <p className="font-semibold text-violet-800">Demo credentials</p>
             <p>Teacher: teacher@school.com / password123</p>
             <p>Principal: principal@school.com / password123</p>
           </div>

@@ -1,75 +1,107 @@
-# Content Broadcasting System Frontend
+# Content Broadcasting System (CBS) — Frontend
 
-A professional, robust content broadcasting system frontend built with Next.js 14 (App Router), JavaScript, Tailwind CSS, shadcn/ui, React Hook Form, Zod, Axios, and React Query.
+A professional content broadcasting platform where teachers upload educational content for principal approval, which then appears on a live public display.
 
-## Features
+## Demo Credentials
 
-- Role-based dashboards for Teacher and Principal
-- Secure authentication with JWT (mocked)
-- Content upload, approval, and live public view
-- Complete mock API layer (in-memory/localStorage)
-- Responsive, clean UI with shadcn/ui and Tailwind
-- Skeleton loaders, toasts, modals, and error handling
-- Pagination, filtering, and search for large datasets
+| Role | Email | Password |
+|------|-------|----------|
+| Teacher | teacher@school.com | password123 |
+| Principal | principal@school.com | password123 |
 
 ## Tech Stack
 
-- Next.js 14 (App Router)
-- JavaScript (ES6+)
-- Tailwind CSS
-- shadcn/ui
-- React Hook Form + Zod
-- Axios + React Query
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 16.2.4 (App Router) |
+| Language | JavaScript (ES6+) |
+| Styling | Tailwind CSS v4 |
+| Forms | React Hook Form + Zod |
+| Data fetching | TanStack Query v5 |
+| HTTP | Axios |
+| Toasts | Sonner |
+| Icons | Lucide React |
 
-## Folder Structure
+> **Note:** shadcn/ui was not installed as a dependency. All UI components (StatCard, StatusBadge, Skeleton, Modal, etc.) are custom-built to match the design spec. The component architecture mirrors shadcn/ui conventions.
+
+## Setup
+
+```bash
+npm install
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000). You will be redirected to `/login`.
+
+## Project Structure
 
 ```
 src/
   app/
-    (auth)/login/
-    (dashboard)/teacher/
-    (dashboard)/principal/
-    live/[teacherId]/
+    (auth)/login/           # Login page (no layout)
+    (dashboard)/
+      teacher/
+        dashboard/          # Stats + recent uploads
+        upload/             # File upload with preview
+        my-content/         # Paginated content list with filters
+      principal/
+        dashboard/          # Stats + pending items preview
+        pending/            # Approve / reject with modal
+        all-content/        # Full table with search + pagination
+    live/[teacherId]/       # Public display page (no auth, 30s polling)
   components/
-    ui/
-    shared/
-    teacher/
-    principal/
+    shared/                 # Navbar, Sidebar, AuthGuard
+    ui/                     # StatCard, StatusBadge, Skeleton, Modal, etc.
   services/
-    api.js
-    auth.service.js
-    content.service.js
-    approval.service.js
+    auth.service.js         # Mock auth (localStorage)
+    content.service.js      # Mock content CRUD (localStorage)
+    approval.service.js     # Approve/reject mutations
   hooks/
-    useAuth.js
-    useContent.js
-    useApproval.js
+    useAuth.js              # Login/logout
+    useContent.js           # Queries + mutations for content
   context/
-    AuthContext.jsx
+    AuthContext.jsx         # Global auth state
   utils/
-    validators.js
-    formatters.js
+    validators.js           # Zod schemas
+    formatters.js           # Date/time helpers
   lib/
-    queryClient.js
+    queryClient.js          # TanStack Query client (singleton)
 ```
 
-## Setup
+## Features
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Run the development server:
-   ```bash
-   npm run dev
-   ```
-3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+- **Role-based routing**: Teachers see upload/manage pages; principals see approval/review pages. `AuthGuard` redirects on wrong role or missing session.
+- **Teacher flow**: Upload content (title, subject, description, schedule, image file) → awaits principal approval → appears on live display if approved and within schedule window.
+- **Principal flow**: Review pending items with approve or reject (rejection requires a reason). All content visible in a searchable, filterable table.
+- **Live display** (`/live/[teacherId]`): Public page (no login), polls every 30 s, shows Scheduled / LIVE / Expired badges based on current time vs. start/end timestamps.
+- **Skeleton loaders** on every async section; **toast notifications** (Sonner) on all mutations.
+- **Responsive**: Table columns collapse on mobile; sidebar collapses to icon-only mode.
 
-## Documentation
+## Assumptions & Limitations
 
-See `Frontend-notes.txt` for architecture, authentication, routing, API, and state management details.
+### Mock API (no real backend)
+All data is stored in **`localStorage`** under the key `cbs_content`. The mock layer (`content.service.js`) ships with 18 seed items (6 approved, 7 pending, 5 rejected) that are written on first load. Clearing browser storage resets all data.
 
----
+There is no real server, database, or file upload endpoint. The "file upload" stores the browser `File` object reference in memory only — it does not persist across page refreshes. The displayed image URLs in seed data point to `picsum.photos` for demonstration.
 
-- Teacher login: `teacher@school.com` / `password123`
-- Principal login: `principal@school.com` / `password123`
+### Authentication
+Auth is fully mocked. `auth.service.js` checks credentials against a hardcoded list and stores `{ id, name, role }` in `localStorage`. There are no JWT tokens, refresh flows, or CSRF protection.
+
+### Schedule / Live logic
+`getScheduleStatus(startTime, endTime)` computes badge state from `Date.now()` at render time — there is no server-side clock sync. A content item is considered **active** when the current time is between `startTime` and `endTime`.
+
+The live page auto-refreshes every 30 seconds via `refetchInterval` in TanStack Query. It does not use WebSockets or SSE.
+
+### Pagination
+Pagination is client-side only — all matching records are returned from localStorage, then sliced in the component. This is fine for a demo dataset but would not scale to large collections.
+
+### No real file storage
+Uploaded files are not stored anywhere persistent. The `fileUrl` field on new uploads will be empty; only seeded items have `picsum.photos` thumbnails.
+
+### Tailwind CSS v4
+This project uses **Tailwind v4** which has breaking changes from v3:
+- Config via `@import "tailwindcss"` in CSS (no `tailwind.config.js`)
+- Canonical utility names differ: `bg-linear-to-br` (not `bg-gradient-to-br`), fractional sizes like `h-4.5`
+
+### Browser compatibility
+Tested in modern Chromium-based browsers. Not tested in Safari or Firefox.

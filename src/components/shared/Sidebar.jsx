@@ -36,35 +36,32 @@ export default function Sidebar() {
   if (!user) return null;
 
   const links = user.role === "teacher" ? teacherLinks : principalLinks;
-  const roleGradient =
-    user.role === "teacher"
-      ? "bg-linear-to-br from-blue-600 to-indigo-600"
-      : "bg-linear-to-br from-purple-600 to-violet-600";
 
   return (
     <aside
-      className={`bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out shrink-0 ${
-        collapsed ? "w-16" : "w-64"
+      className={`bg-[#1e1b4b] flex flex-col transition-all duration-300 ease-in-out shrink-0 ${
+        collapsed ? "w-16" : "w-60"
       }`}
     >
+      {/* Logo */}
       <div
-        className={`flex h-16 items-center border-b border-gray-200 px-4 ${
+        className={`flex h-16 items-center px-4 shrink-0 ${
           collapsed ? "justify-center" : "justify-between"
         }`}
       >
         {!collapsed && (
-          <div className="flex items-center gap-2">
-            <div
-              className={`flex h-7 w-7 items-center justify-center rounded-lg ${roleGradient}`}
-            >
-              <Radio className="h-3.5 w-3.5 text-white" />
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500">
+              <Radio className="h-4 w-4 text-white" />
             </div>
-            <span className="text-sm font-bold text-gray-800">CBS</span>
+            <span className="text-base font-bold text-white tracking-tight">
+              CBS
+            </span>
           </div>
         )}
         <button
           onClick={toggle}
-          className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+          className="rounded-lg p-1.5 text-white/40 hover:bg-white/10 hover:text-white/80 transition-colors"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (
@@ -75,7 +72,8 @@ export default function Sidebar() {
         </button>
       </div>
 
-      <nav className="flex-1 space-y-0.5 p-3">
+      {/* Nav */}
+      <nav className="flex-1 px-3 py-4 space-y-1">
         {links.map(({ href, label, icon: Icon }) => {
           const isActive =
             pathname === href || pathname.startsWith(href + "/");
@@ -84,15 +82,15 @@ export default function Sidebar() {
               key={href}
               href={href}
               title={collapsed ? label : undefined}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+              className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
                 isActive
-                  ? "bg-blue-50 text-blue-700 shadow-sm"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  ? "bg-white/15 text-white"
+                  : "text-white/50 hover:bg-white/10 hover:text-white/80"
               } ${collapsed ? "justify-center" : ""}`}
             >
               <Icon
-                className={`h-5 w-5 shrink-0 ${
-                  isActive ? "text-blue-600" : "text-gray-400"
+                className={`h-[18px] w-[18px] shrink-0 ${
+                  isActive ? "text-white" : "text-white/50"
                 }`}
               />
               {!collapsed && <span>{label}</span>}
@@ -101,14 +99,24 @@ export default function Sidebar() {
         })}
       </nav>
 
+      {/* User info at bottom */}
       {!collapsed && (
-        <div className="p-3 border-t border-gray-200">
-          <div
-            className={`rounded-lg ${roleGradient} p-3 text-white`}
-          >
-            <p className="text-xs font-medium opacity-75">Signed in as</p>
-            <p className="mt-0.5 text-sm font-bold truncate">{user.name}</p>
-            <p className="text-xs opacity-75 capitalize">{user.role}</p>
+        <div className="px-4 py-4 shrink-0">
+          <div className="flex items-center gap-3 rounded-xl bg-white/10 px-3 py-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-500 text-white text-xs font-bold shrink-0">
+              {user.name
+                .split(" ")
+                .map((n) => n[0])
+                .slice(0, 2)
+                .join("")
+                .toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white truncate">
+                {user.name}
+              </p>
+              <p className="text-xs text-white/50 capitalize">{user.role}</p>
+            </div>
           </div>
         </div>
       )}
