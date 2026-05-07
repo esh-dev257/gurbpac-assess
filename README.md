@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Content Broadcasting System Frontend
 
-## Getting Started
+A professional, robust content broadcasting system frontend built with Next.js 14 (App Router), JavaScript, Tailwind CSS, shadcn/ui, React Hook Form, Zod, Axios, and React Query.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Role-based dashboards for Teacher and Principal
+- Secure authentication with JWT (mocked)
+- Content upload, approval, and live public view
+- Complete mock API layer (in-memory/localStorage)
+- Responsive, clean UI with shadcn/ui and Tailwind
+- Skeleton loaders, toasts, modals, and error handling
+- Pagination, filtering, and search for large datasets
+
+## Tech Stack
+
+- Next.js 14 (App Router)
+- JavaScript (ES6+)
+- Tailwind CSS
+- shadcn/ui
+- React Hook Form + Zod
+- Axios + React Query
+
+## Folder Structure
+
+```
+src/
+  app/
+    (auth)/login/
+    (dashboard)/teacher/
+    (dashboard)/principal/
+    live/[teacherId]/
+  components/
+    ui/
+    shared/
+    teacher/
+    principal/
+  services/
+    api.js
+    auth.service.js
+    content.service.js
+    approval.service.js
+  hooks/
+    useAuth.js
+    useContent.js
+    useApproval.js
+  context/
+    AuthContext.jsx
+  utils/
+    validators.js
+    formatters.js
+  lib/
+    queryClient.js
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Setup
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Run the development server:
+   ```bash
+   npm run dev
+   ```
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Documentation
 
-## Learn More
+See `Frontend-notes.txt` for architecture, authentication, routing, API, and state management details.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Teacher login: `teacher@school.com` / `password123`
+- Principal login: `principal@school.com` / `password123`

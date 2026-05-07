@@ -1,0 +1,147 @@
+# Content Broadcasting System - Frontend Notes
+# =============================================
+# Tech: Next.js 16 (App Router) · React 19 · Tailwind CSS 4 · TanStack Query v5
+
+## Project Structure Decisions
+
+src/
+  app/
+    (auth)/login/            - Public login page (no layout wrapper)
+    (dashboard)/
+      teacher/               - Teacher pages with AuthGuard (role: teacher)
+      principal/             - Principal pages with AuthGuard (role: principal)
+    live/[teacherId]/        - Public live display - no auth required
+  components/
+    ui/                      - Generic, reusable primitives (StatCard, StatusBadge,
+                               Skeleton, Table, Pagination, LoadingSpinner, FilePreview)
+    shared/                  - Cross-feature layout components (Navbar, Sidebar,
+                               Modal, AuthGuard)
+    teacher/                 - (Unused; teacher logic lives in page files for simplicity)
+    principal/               - (Unused; principal logic lives in page files)
+  services/                  - All data-layer logic isolated here for easy real-API swap
+  hooks/                     - TanStack Query wrappers - components never call services directly
+  context/                   - AuthContext: single source of truth for user identity
+  utils/                     - Pure helpers (formatters, validators)
+  lib/                       - Infrastructure (queryClient)
+
+Routing decisions:
+- Route groups ((auth), (dashboard)) avoid URL pollution while sharing layouts
+- [teacherId] is a dynamic segment - the live page is fully public
+- Layout files are Server Components; auth guards are Client Components imported by them
+
+
+## Authentication Flow
+
+1. User submits email + password on /login
+2. loginSchema (Zod) validates the form client-side before submission
+3. auth.service.login() simulates a 900–1500 ms API call and returns { token, user }
+4. Token (base64 of "id:role:timestamp") + role stored in localStorage
+5. AuthContext hydrates from localStorage on mount via getUserFromToken()
+6. On success, router.replace() sends the user to their role-specific dashboard
+7. Logout calls logoutApi() (removes localStorage keys) and router.replace("/login")
+
+Mock credentials:
+  teacher@school.com   / password123  →  /teacher/dashboard
+  principal@school.com / password123  →  /principal/dashboard
+
+
+## Role-based Routing
+
+- Each dashboard layout (teacher/layout.js, principal/layout.js) wraps children
+  in <AuthGuard requiredRole="teacher|principal">
+- AuthGuard is "use client" and reads from AuthContext
+- If loading: shows a centred spinner
+- If unauthenticated: router.replace("/login") + renders null
+- If wrong role: router.replace("/<correct-role>/dashboard") + renders null
+- This ensures teachers can never see /principal/* and vice versa
+
+
+## API Integration Approach
+
+All API calls go through service files only - hooks and components never import
+localStorage or mock data directly.
+
+services/api.js          - Axios instance with Bearer token interceptor
+                           (not used for mock calls but ready for real backend)
+
+services/auth.service.js - login(), getUserFromToken(), logout()
+services/content.service.js - fetchContent(), fetchContentStats(),
+                              fetchRecentContent(), fetchTeacherLiveContent(),
+                              uploadContent(), getScheduleStatus()
+services/approval.service.js - approveContent(id), rejectContent(id, reason)
+
+Mock persistence:
+- 18 hard-coded content items are written to localStorage on first load (key: cbs_content_items)
+- Subsequent mutations (approve/reject/upload) update localStorage
+- Clearing localStorage resets to the original 18 items
+
+To swap in a real backend:
+1. Replace the body of each service function with a real axios call
+2. No changes needed in hooks, components, or pages
+
+
+## State Management
+
+Layer         | Tool              | Used for
+--------------|-------------------|------------------------------------------
+Server state  | TanStack Query v5 | All data fetching, mutations, cache invalidation
+Auth state    | React Context     | User identity, login/logout across the tree
+Local UI      | React useState    | Modals, search inputs, pagination, file preview
+Form state    | React Hook Form   | All forms - validation via zodResolver
+
+Query keys:
+  ["content", { teacherId, status, search, page, pageSize }]
+  ["contentStats", teacherId]
+  ["recentContent", { teacherId, limit }]
+  ["liveContent", teacherId]   ← refetchInterval: 30000 ms
+
+Cache invalidation:
+  uploadContent mutation  → invalidates content, contentStats, recentContent
+  approveContent mutation → invalidates content, contentStats, recentContent
+  rejectContent mutation  → invalidates content, contentStats, recentContent
+
+QueryClient defaults (lib/queryClient.js):
+  staleTime: 30 s   - reduces refetch noise on navigation
+  retry: 1          - one retry on failure
+  refetchOnWindowFocus: false - avoids surprise refetches
+
+
+## Performance Choices
+
+- React.memo not applied to page-level components (only rendered once)
+- useCallback on event handlers that are passed as props (Modal, PendingCard actions)
+- useMemo only where computation is non-trivial (lastRefreshed in live page)
+- Pagination (10 items/page) in All Content and My Content - prevents huge DOM trees
+- Skeleton loaders on every data-dependent UI region - no layout flash
+- Images use object-cover so broken URLs degrade to an icon fallback (onError handler)
+
+
+## Error Handling
+
+Scenario                       | Handling
+-------------------------------|----------------------------------------------
+Invalid credentials            | useAuth catches thrown Error; error shown inline
+Upload: wrong file type/size   | Zod schema + service validation; toast.error()
+Upload: end < start            | Zod .refine(); inline field error
+Approval/rejection failure     | try/catch in page; toast.error()
+Empty API response             | Optional-chaining + fallback (data?.items ?? [])
+Missing/null data fields       | "-" fallback in formatDateTime, table cells
+localStorage unavailable (SSR) | typeof window === "undefined" guard in services
+Image load failure             | onError → hide img, show ImageIcon placeholder
+Unauthenticated dashboard access | AuthGuard redirects to /login
+Wrong-role access              | AuthGuard redirects to correct dashboard
+
+
+## Key Assumptions
+
+- Only one teacher (teacher-1) has content in the mock dataset.
+  In production, each teacher would only see their own content.
+- The live page URL pattern is /live/<teacherId>.
+  For teacher-1 use: /live/teacher-1
+- Uploaded images are stored as base64 data URLs in localStorage.
+  In production these would be uploaded to object storage (S3, Cloudinary, etc.).
+- JWT tokens are base64-encoded strings - NOT cryptographically secure.
+  Replace with real JWT + refresh token flow for production.
+- The principal sees ALL teachers' content (no school/district scoping).
+- Tailwind CSS 4 uses @import "tailwindcss" in CSS (not tailwind.config.js).
+  Use bg-linear-to-br instead of bg-gradient-to-br (Tailwind v4 canonical names).
