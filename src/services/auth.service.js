@@ -46,6 +46,17 @@ export async function getUserFromToken(token) {
   }
 }
 
+export function getUserFromTokenSync(token) {
+  try {
+    const [id] = atob(token).split(":");
+    const user = USERS.find((u) => u.id === id);
+    if (!user) return null;
+    return { id: user.id, email: user.email, role: user.role, name: user.name };
+  } catch {
+    return null;
+  }
+}
+
 export function logout() {
   localStorage.removeItem("token");
   localStorage.removeItem("role");

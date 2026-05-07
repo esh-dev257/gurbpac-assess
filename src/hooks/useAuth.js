@@ -1,26 +1,21 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import {
   login as loginApi,
-  getUserFromToken,
+  getUserFromTokenSync,
   logout as logoutApi,
 } from "../services/auth.service";
 
-export function useAuth() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+function getInitialUser() {
+  if (typeof window === "undefined") return null;
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+  return getUserFromTokenSync(token);
+}
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    getUserFromToken(token)
-      .then(setUser)
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
-  }, []);
+export function useAuth() {
+  const [user, setUser] = useState(getInitialUser);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const login = useCallback(async (email, password) => {
     setLoading(true);
