@@ -1,6 +1,7 @@
 "use client";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 import {
+  login as loginApi,
   getUserFromTokenSync,
   logout as logoutApi,
 } from "../services/auth.service";
@@ -16,15 +17,32 @@ function getInitialUser() {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(getInitialUser);
-  const loading = false;
+  const [loginError, setLoginError] = useState(null);
+  const [loginLoading, setLoginLoading] = useState(false);
 
-  const logout = () => {
+  const login = useCallback(async (email, password) => {
+    setLoginLoading(true);
+    setLoginError(null);
+    try {
+      const { token, user } = await loginApi({ email, password });
+      localStorage.setItem("token", token);
+      setUser(user);
+      return user;
+    } catch (e) {
+      setLoginError(e.message);
+      throw e;
+    } finally {
+      setLoginLoading(false);
+    }
+  }, []);
+
+  const logout = useCallback(() => {
     logoutApi();
     setUser(null);
-  };
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, loginError, loginLoading }}>
       {children}
     </AuthContext.Provider>
   );

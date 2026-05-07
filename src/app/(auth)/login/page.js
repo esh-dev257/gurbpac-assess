@@ -2,13 +2,13 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "../../../utils/validators";
-import { useAuth } from "../../../hooks/useAuth";
+import { useAuthContext } from "../../../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Radio, Mail, Lock, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
-  const { user, login, error, loading } = useAuth();
+  const { user, login, loginError, loginLoading } = useAuthContext();
   const router = useRouter();
   const {
     register,
@@ -29,11 +29,11 @@ export default function LoginPage() {
       if (u.role === "teacher") router.replace("/teacher/dashboard");
       else if (u.role === "principal") router.replace("/principal/dashboard");
     } catch {
-      /* error handled by useAuth */
+      /* error handled by AuthContext */
     }
   };
 
-  const busy = loading || isSubmitting;
+  const busy = loginLoading || isSubmitting;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
@@ -113,10 +113,10 @@ export default function LoginPage() {
             </div>
 
             {/* API Error */}
-            {error && (
+            {loginError && (
               <div className="flex items-center gap-2 rounded-xl bg-rose-50 border border-rose-100 px-4 py-3 text-sm text-rose-700">
                 <AlertCircle className="h-4 w-4 shrink-0" />
-                {error}
+                {loginError}
               </div>
             )}
 
